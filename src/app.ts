@@ -7,7 +7,11 @@ import { globalErrorHandler } from './app/middleware/globalErrorHandler'
 import { notFound } from './app/middleware/notFound'
 import { AuthRoutes } from './app/module/auth/auth.route'
 
+
+
 const app: Application = express()
+
+
 
 app.use(
     cors({
