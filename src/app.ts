@@ -8,7 +8,6 @@ import { notFound } from './app/middleware/notFound'
 import { AuthRoutes } from './app/module/auth/auth.route'
 
 
-
 const app: Application = express()
 
 
@@ -36,6 +35,7 @@ app.get('/', async (req: Request, res: Response) => {
         message: 'Welcome to PH Healthcare System Backend',
     })
 })
+
 
 app.use(globalErrorHandler)
 app.use(notFound)
