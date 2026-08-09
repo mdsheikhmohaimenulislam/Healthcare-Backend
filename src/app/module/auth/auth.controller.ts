@@ -143,6 +143,7 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
 export const AuthController = {
   registerPatient,
   loginUser,
