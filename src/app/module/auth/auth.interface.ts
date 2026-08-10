@@ -1,4 +1,4 @@
-import { Role } from "../../../generated/prisma/browser";
+import type { Role } from "../../../generated/prisma/browser";
 
 export interface ILoginUserPayload {
 	email: string;
@@ -18,7 +18,6 @@ export interface IRequestUser {
 	role: Role;
 }
 
-
 export interface IGoogleLoginPayload {
-	idToken:string
+	idToken: string;
 }
