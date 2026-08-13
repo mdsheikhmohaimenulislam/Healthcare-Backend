@@ -4,39 +4,21 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
-import z, { email } from "zod";
+import { PatientRegisterZodSchema } from "./auth.validation";
 
-const PatientRegisterZodSchema = z.object({
-  name: z.string().min(3).max(6),
-  email: z.string(),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 8 characters long" })
-    .max(10, { message: "Password must be at most 20 characters long" })
-    .refine((val) => /[A-Z]/.test(val), {
-      message: "Password must contain at least one uppercase letter",
-    })
-    .refine((val) => /[a-z]/.test(val), {
-      message: "Password must contain at least one lowercase letter",
-    })
-    .refine((val) => /[0-9]/.test(val), {
-      message: "Password must contain at least one number",
-    })
-    .refine((val) => /[^A-Za-z0-9]/.test(val), {
-      message: "Password must contain at least one special character",
-    }),
-  parient: z
-    .object({
-      contacNumber: z.string().optional(),
-    })
-    .optional(),
-});
+
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
   const payload = PatientRegisterZodSchema.safeParse(req.body);
 
-  if (!payload.success) {
-    throw new Error(payload.error.message);
+ if (!payload.success) {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Validation Error",
+        errors: payload.error.issues,
+      });
   }
 
   const result = await AuthService.registerPatient(payload.data as any);
