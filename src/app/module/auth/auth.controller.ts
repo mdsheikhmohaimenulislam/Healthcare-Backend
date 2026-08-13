@@ -4,149 +4,181 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
+import z, { email } from "zod";
+
+const PatientRegisterZodSchema = z.object({
+  name: z.string().min(3).max(6),
+  email: z.string(),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 8 characters long" })
+    .max(10, { message: "Password must be at most 20 characters long" })
+    .refine((val) => /[A-Z]/.test(val), {
+      message: "Password must contain at least one uppercase letter",
+    })
+    .refine((val) => /[a-z]/.test(val), {
+      message: "Password must contain at least one lowercase letter",
+    })
+    .refine((val) => /[0-9]/.test(val), {
+      message: "Password must contain at least one number",
+    })
+    .refine((val) => /[^A-Za-z0-9]/.test(val), {
+      message: "Password must contain at least one special character",
+    }),
+  parient: z
+    .object({
+      contacNumber: z.string().optional(),
+    })
+    .optional(),
+});
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.registerPatient(payload);
+  const payload = PatientRegisterZodSchema.safeParse(req.body);
 
-	const { accessToken, refreshToken, user, patient } = result;
+  if (!payload.success) {
+    throw new Error(payload.error.message);
+  }
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  const result = await AuthService.registerPatient(payload.data as any);
 
-	sendResponse(res, {
-		statusCode: httpStatus.CREATED,
-		success: true,
-		message: "Patient registered successfully",
-		data: {
-			accessToken,
-			refreshToken,
-			user,
-			patient,
-		},
-	});
+  const { accessToken, refreshToken, user, patient } = result;
+
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Patient registered successfully",
+    data: {
+      accessToken,
+      refreshToken,
+      user,
+      patient,
+    },
+  });
 });
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
-	const result = await AuthService.loginUser(payload);
-	const { accessToken, refreshToken } = result;
+  const payload = req.body;
+  const result = await AuthService.loginUser(payload);
+  const { accessToken, refreshToken } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "User logged in successfully",
-		data: {
-			accessToken,
-			refreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User logged in successfully",
+    data: {
+      accessToken,
+      refreshToken,
+    },
+  });
 });
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-	const user = req.user as unknown as IRequestUser;
+  const user = req.user as unknown as IRequestUser;
 
-	if (!user) {
-		throw new Error("User information is missing in the request");
-	}
+  if (!user) {
+    throw new Error("User information is missing in the request");
+  }
 
-	const result = await AuthService.getMe(user);
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "User profile fetched successfully",
-		data: result,
-	});
+  const result = await AuthService.getMe(user);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User profile fetched successfully",
+    data: result,
+  });
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
-	if (!req.cookies.refreshToken) {
-		throw new Error("Refresh token is missing");
-	}
-	const result = await AuthService.refreshToken(req.cookies.refreshToken);
-	const { accessToken, refreshToken: newRefreshToken } = result;
+  if (!req.cookies.refreshToken) {
+    throw new Error("Refresh token is missing");
+  }
+  const result = await AuthService.refreshToken(req.cookies.refreshToken);
+  const { accessToken, refreshToken: newRefreshToken } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-	});
-	res.cookie("refreshToken", newRefreshToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", newRefreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "New tokens generated successfully",
-		data: {
-			accessToken,
-			refreshToken: newRefreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: {
+      accessToken,
+      refreshToken: newRefreshToken,
+    },
+  });
 });
 
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
+  const payload = req.body;
 
-	const result = await AuthService.googleLogin(payload);
-	const { accessToken, refreshToken } = result;
+  const result = await AuthService.googleLogin(payload);
+  const { accessToken, refreshToken } = result;
 
-	res.cookie("accessToken", accessToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day.....
-	});
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: false,
-		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7, //.......7 days
-	});
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day.....
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, //.......7 days
+  });
 
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "New tokens generated successfully",
-		data: {
-			accessToken,
-			refreshToken,
-		},
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: {
+      accessToken,
+      refreshToken,
+    },
+  });
 });
 
 export const AuthController = {
-	registerPatient,
-	loginUser,
-	getMe,
-	refreshToken,
-	googleLogin,
+  registerPatient,
+  loginUser,
+  getMe,
+  refreshToken,
+  googleLogin,
 };
