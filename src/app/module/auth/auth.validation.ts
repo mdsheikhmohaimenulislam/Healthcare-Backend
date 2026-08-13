@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const PatientRegisterZodSchema = z.object({
+const PatientRegisterZodSchema = z.object({
   name: z.string("not a string").min(3).max(6),
   email: z.string(),
   password: z
@@ -16,3 +16,8 @@ export const PatientRegisterZodSchema = z.object({
     })
     .optional(),
 });
+
+9;
+export const PatientValidation = {
+  PatientRegisterZodSchema,
+};
