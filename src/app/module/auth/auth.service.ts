@@ -15,22 +15,35 @@ import type {
   IRegisterPatientPayload,
   IRequestUser,
 } from "./auth.interface";
-import { OAuth2Client, type TokenPayload } from "google-auth-library";
+
 import { googleClient } from "../../lib/googleAuth";
+import { TokenPayload } from "google-auth-library";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
-  const { name, password, patient:patientData } = payload;
+  console.log("A. Service started");
+
+  const { name, password, patient: patientData } = payload;
   const email = payload.email.trim().toLowerCase();
+
+  console.log("B. Payload:", payload);
 
   const isUserExists = await prisma.user.findUnique({
     where: { email },
   });
 
+  console.log("C. User check done:", isUserExists);
+
   if (isUserExists) {
     throw new Error("User with this email already exists");
   }
 
+  console.log("D. Hashing password");
+
   const hashedPassword = await bcrypt.hash(password, 8);
+
+  console.log("E. Password hashed");
+
+  console.log("F. Creating user...");
 
   const createdUser = await prisma.user.create({
     data: {
@@ -41,12 +54,18 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
       status: UserStatus.ACTIVE,
       emailVerified: false,
       patient: {
-        create: { name, email, contactNumber: patientData?.contactNumber || "" },
+        create: {
+          name,
+          email,
+          contactNumber: patientData?.contactNumber || "",
+        },
       },
     },
     omit: { password: true },
     include: { patient: true },
   });
+
+  console.log("G. User created:", createdUser);
 
   const { patient, ...user } = createdUser;
   const jwtPayload = {

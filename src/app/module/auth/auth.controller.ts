@@ -5,39 +5,53 @@ import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
+const registerPatient = catchAsync(
+  async (req: Request, res: Response) => {
+    console.log("1. Controller started");
 
-const registerPatient = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
+    const payload = req.body;
 
-  const result = await AuthService.registerPatient(payload.data as any);
+    console.log("2. Payload:", payload);
 
-  const { accessToken, refreshToken, user, patient } = result;
+    const result = await AuthService.registerPatient(payload);
 
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
-  });
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-  });
+    console.log("3. Service result:", result);
 
-  sendResponse(res, {
-    statusCode: httpStatus.CREATED,
-    success: true,
-    message: "Patient registered successfully",
-    data: {
-      accessToken,
-      refreshToken,
-      user,
-      patient,
-    },
-  });
-});
+    const { accessToken, refreshToken, user, patient } = result;
+
+    console.log("4. Token extracted");
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    console.log("5. Cookies set");
+
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: "Patient registered successfully",
+      data: {
+        accessToken,
+        refreshToken,
+        user,
+        patient,
+      },
+    });
+
+    console.log("6. Response sent");
+  }
+);
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
