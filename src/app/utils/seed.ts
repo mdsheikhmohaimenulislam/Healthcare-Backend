@@ -3,6 +3,8 @@ import { Role } from "../../generated/prisma/enums";
 import { prisma } from "../lib/prisma";
 import config from "../config";
 
+//create tester Super admin
+
 export const seedSuperAdmin = async () => {
   try {
     const isSuperAdmin = await prisma.user.findFirst({
@@ -53,3 +55,7 @@ export const seedSuperAdmin = async () => {
     });
   }
 };
+
+//create tester admin
+
+// create tester doctor
