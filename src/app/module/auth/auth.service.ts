@@ -22,6 +22,7 @@ import { googleClient } from "../../lib/googleAuth";
 import { TokenPayload } from "google-auth-library";
 import crypto from "crypto";
 import { redisClient } from "../../lib/redis";
+import { number } from "zod";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
   console.log("A. Service started");
@@ -383,10 +384,7 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
     throw new Error("User is Deleted");
   }
 
-  if (
-    isUserExist.googleId &&
-    isUserExist.authProvider === "GOOGLE"
-  ) {
+  if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
     throw new Error("User has Account with Google");
   }
 
@@ -408,7 +406,65 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
   console.log("F. OTP saved to Redis");
 };
 
-const resetPassword = async (payload: IResetPasswordPayload) => {};
+const resetPassword = async (payload: IResetPasswordPayload) => {
+  const { email, otp, newPassword } = payload;
+
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  console.log("C. User:", isUserExist);
+
+  if (!isUserExist) {
+    throw new Error("User Does not Exist");
+  }
+
+  if (isUserExist.status === "BLOCKED") {
+    throw new Error("User is Blocked");
+  }
+
+  if (!isUserExist.emailVerified) {
+    throw new Error("User not verified");
+  }
+
+  if (isUserExist.isDeleted || isUserExist.status === "DELETED") {
+    throw new Error("User is Deleted");
+  }
+
+  if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
+    throw new Error("User has Account with Google");
+  }
+
+  const key = `forget-password-otp:${isUserExist.email}`;
+
+  const redisOtp = await redisClient.get(key);
+
+  if (!redisOtp) {
+    throw new Error("Invalid OTP");
+  }
+
+  if (redisOtp !== otp) {
+    throw new Error("OTP Does Not Match");
+  }
+
+  const hashedNewPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  await prisma.user.update({
+    where: {
+      email: isUserExist.email,
+    },
+    data: {
+      password: hashedNewPassword,
+    },
+  });
+
+  await redisClient.del([key]);
+};
 
 export const AuthService = {
   registerPatient,

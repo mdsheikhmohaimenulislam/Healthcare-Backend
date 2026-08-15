@@ -31,6 +31,7 @@ router.post("/google", AuthController.googleLogin);
 
 router.post(
   "/forgor-password",
+  validationRequest(UserValidation.ForgotPasswordZodSchema),
   //?=================== Validation Requst ===============//
 
   AuthController.forgotPassword,
@@ -38,7 +39,7 @@ router.post(
 router.post(
   "/reset-password",
   //?=================== Validation Requst ===============//
-
+  validationRequest(UserValidation.ResetPasswordZodSchema),
   AuthController.resetPassword,
 );
 
