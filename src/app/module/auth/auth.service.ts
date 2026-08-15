@@ -10,14 +10,18 @@ import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import { Payload } from "../../../generated/prisma/internal/prismaNamespace";
 import type {
+  IForgotPasswordPayload,
   IGoogleLoginPayload,
   ILoginUserPayload,
   IRegisterPatientPayload,
   IRequestUser,
+  IResetPasswordPayload,
 } from "./auth.interface";
 
 import { googleClient } from "../../lib/googleAuth";
 import { TokenPayload } from "google-auth-library";
+import crypto from "crypto";
+import { redisClient } from "../../lib/redis";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
   console.log("A. Service started");
@@ -349,8 +353,62 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
   };
 };
 
-const forgotPassword =(payload: any) => {}
-const resetPassword =(payload: any) =>{}
+const forgotPassword = async (payload: IForgotPasswordPayload) => {
+  console.log("A. Forgot password service started");
+  console.log("B. Payload:", payload);
+
+  const { email } = payload;
+
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  console.log("C. User:", isUserExist);
+
+  if (!isUserExist) {
+    throw new Error("User Does not Exist");
+  }
+
+  if (isUserExist.status === "BLOCKED") {
+    throw new Error("User is Blocked");
+  }
+
+  if (!isUserExist.emailVerified) {
+    throw new Error("User not verified");
+  }
+
+  if (isUserExist.isDeleted || isUserExist.status === "DELETED") {
+    throw new Error("User is Deleted");
+  }
+
+  if (
+    isUserExist.googleId &&
+    isUserExist.authProvider === "GOOGLE"
+  ) {
+    throw new Error("User has Account with Google");
+  }
+
+  console.log("D. User validation passed");
+
+  const otp = crypto.randomInt(100000, 1000000).toString();
+
+  console.log("E. OTP:", otp);
+
+  const key = `forget-password-otp:${isUserExist.email}`;
+
+  await redisClient.set(key, otp, {
+    expiration: {
+      type: "EX",
+      value: 5 * 60,
+    },
+  });
+
+  console.log("F. OTP saved to Redis");
+};
+
+const resetPassword = async (payload: IResetPasswordPayload) => {};
 
 export const AuthService = {
   registerPatient,
@@ -358,6 +416,6 @@ export const AuthService = {
   getMe,
   refreshToken,
   googleLogin,
-forgotPassword,
-resetPassword
+  forgotPassword,
+  resetPassword,
 };
