@@ -5,53 +5,51 @@ import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
-const registerPatient = catchAsync(
-  async (req: Request, res: Response) => {
-    console.log("1. Controller started");
+const registerPatient = catchAsync(async (req: Request, res: Response) => {
+  console.log("1. Controller started");
 
-    const payload = req.body;
+  const payload = req.body;
 
-    console.log("2. Payload:", payload);
+  console.log("2. Payload:", payload);
 
-    const result = await AuthService.registerPatient(payload);
+  const result = await AuthService.registerPatient(payload);
 
-    console.log("3. Service result:", result);
+  console.log("3. Service result:", result);
 
-    const { accessToken, refreshToken, user, patient } = result;
+  const { accessToken, refreshToken, user, patient } = result;
 
-    console.log("4. Token extracted");
+  console.log("4. Token extracted");
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24,
-    });
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24,
+  });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
 
-    console.log("5. Cookies set");
+  console.log("5. Cookies set");
 
-    sendResponse(res, {
-      statusCode: httpStatus.CREATED,
-      success: true,
-      message: "Patient registered successfully",
-      data: {
-        accessToken,
-        refreshToken,
-        user,
-        patient,
-      },
-    });
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Patient registered successfully",
+    data: {
+      accessToken,
+      refreshToken,
+      user,
+      patient,
+    },
+  });
 
-    console.log("6. Response sent");
-  }
-);
+  console.log("6. Response sent");
+});
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -158,6 +156,36 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
     },
   });
 });
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await AuthService.forgotPassword(payload);
+
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: {
+
+    },
+  });
+});
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await AuthService.resetPassword(payload);
+
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: {
+
+    },
+  });
+});
 
 export const AuthController = {
   registerPatient,
@@ -165,4 +193,6 @@ export const AuthController = {
   getMe,
   refreshToken,
   googleLogin,
+  forgotPassword,
+  resetPassword,
 };
