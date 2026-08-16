@@ -24,6 +24,8 @@ import crypto from "crypto";
 import { redisClient } from "../../lib/redis";
 import { number } from "zod";
 import { transporter } from "../../lib/nodemailer";
+import path from "path";
+import ejs from "ejs";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
   console.log("A. Service started");
@@ -404,11 +406,21 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
     },
   });
 
+  const tempatePath = path.join(
+    process.cwd(),
+    "/src/app/templates/forgotPassword.ejs",
+  );
+
+  const html = await ejs.renderFile(tempatePath, {
+    OTP: otp,
+  });
+
   await transporter.sendMail({
     from: config.email_sender,
     to: isUserExist.email,
     subject: "Forgot Password",
-    text: `Your OTP is ${otp}`,
+    // text: `Your OTP is ${otp}`,
+    html,
   });
 };
 
