@@ -6,35 +6,35 @@ import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
-  console.log("1. Controller started");
+  // const payload = PatientValidation.PatientRegistrationZodSchema.safeParse(req.body);
+
+  // if(!payload.success){
+  // 	console.log(payload.error);
+  // 	console.log(payload.error.issues);
+
+  // 	throw new Error(payload.error.issues[0].message)
+  // }
+
+  // console.log(payload);
 
   const payload = req.body;
 
-  console.log("2. Payload:", payload);
-
   const result = await AuthService.registerPatient(payload);
 
-  console.log("3. Service result:", result);
-
   const { accessToken, refreshToken, user, patient } = result;
-
-  console.log("4. Token extracted");
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: false,
-    sameSite: "lax",
-    maxAge: 1000 * 60 * 60 * 24,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
   });
-
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: false,
-    sameSite: "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
-
-  console.log("5. Cookies set");
 
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -47,8 +47,6 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
       patient,
     },
   });
-
-  console.log("6. Response sent");
 });
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
@@ -126,24 +124,24 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
     },
   });
 });
-
 const googleLogin = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
 
   const result = await AuthService.googleLogin(payload);
+
   const { accessToken, refreshToken } = result;
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: false,
     sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day.....
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: false,
     sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 7, //.......7 days
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
 
   sendResponse(res, {
@@ -162,26 +160,31 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 
   await AuthService.forgotPassword(payload);
 
+
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: `OTP Send To Email: ${payload.email}`,
+    message: `OTP Sent To Email : ${payload.email}`,
     data: null,
   });
 });
+
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
+	const payload = req.body;
 
-  await AuthService.resetPassword(payload);
+	await AuthService.resetPassword(payload);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Password Changed successfully",
-    data: null,
-  });
+
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Password Changed Successfully",
+		data: null,
+	});
 });
+
 
 export const AuthController = {
   registerPatient,
