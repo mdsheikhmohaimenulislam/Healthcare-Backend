@@ -10,7 +10,7 @@ import {
   seedTesterDoctor,
 } from "./app/utils/seed";
 
-const PORT = config.port;
+const PORT = Number(config.port);
 
 const main = async () => {
   try {

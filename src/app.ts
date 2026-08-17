@@ -11,8 +11,6 @@ import config from "./app/config";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { AuthRoutes } from "./app/module/auth/auth.route";
-import z from "zod";
-import { redisClient } from "./app/lib/redis";
 import crypto from "crypto";
 
 const app: Application = express();

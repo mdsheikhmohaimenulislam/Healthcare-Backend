@@ -5,6 +5,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
+
 const registerPatient = catchAsync(async (req: Request, res: Response) => {
   // const payload = PatientValidation.PatientRegistrationZodSchema.safeParse(req.body);
 
@@ -19,7 +20,35 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
 
   const payload = req.body;
 
-  const result = await AuthService.registerPatient(payload);
+  await AuthService.registerPatient(payload);
+
+  // const { accessToken, refreshToken, user, patient } = result;
+
+  // res.cookie("accessToken", accessToken, {
+  //   httpOnly: true,
+  //   secure: false,
+  //   sameSite: "none",
+  //   maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  // });
+  // res.cookie("refreshToken", refreshToken, {
+  //   httpOnly: true,
+  //   secure: false,
+  //   sameSite: "none",
+  //   maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  // });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Verification OTP Sent",
+    data: null,
+  });
+});
+
+const verifyPatientEmail = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await AuthService.verifyPatientEmail(payload);
 
   const { accessToken, refreshToken, user, patient } = result;
 
@@ -39,7 +68,7 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "Patient registered successfully",
+    message: "Email Verified Successfully",
     data: {
       accessToken,
       refreshToken,
@@ -160,8 +189,6 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 
   await AuthService.forgotPassword(payload);
 
-
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -170,21 +197,18 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-	const payload = req.body;
+  const payload = req.body;
 
-	await AuthService.resetPassword(payload);
+  await AuthService.resetPassword(payload);
 
-
-	sendResponse(res, {
-		statusCode: httpStatus.OK,
-		success: true,
-		message: "Password Changed Successfully",
-		data: null,
-	});
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password Changed Successfully",
+    data: null,
+  });
 });
-
 
 export const AuthController = {
   registerPatient,
@@ -194,4 +218,5 @@ export const AuthController = {
   googleLogin,
   forgotPassword,
   resetPassword,
+  verifyPatientEmail,
 };
