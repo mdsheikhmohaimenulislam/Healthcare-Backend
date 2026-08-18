@@ -29,6 +29,16 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
   //   )
   //   .end(buffer);
 
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      imagePublickId: true,
+      imageurl: true,
+    },
+  });
+
   const cloudinaryResult = await new Promise<UploadApiResponse>(
     (resolve, reject) => {
       cloudinary.uploader
@@ -64,6 +74,10 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
       password: true,
     },
   });
+
+  if(currentUser?.imagePublickId && currentUser.imageurl){
+    await cloudinary.uploader.destroy(currentUser.imagePublickId)
+  }
 
   return uploadUser;
 };
