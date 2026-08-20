@@ -15,5 +15,4 @@ router.patch(
 
 export const userRoutes = router;
 
-// Dalam bahasa Inggris, kita bilang, “Kamu spesial bagiku.
-// Dalam puisi, kita bilang, Ada beberapa orang yang datang ke dalam hidupmu dengan tenang, namun entah bagaimana, mereka mengubah seluruh duniamu.🤍;
+
