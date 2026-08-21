@@ -15,7 +15,7 @@ const bookAppointment = catchAsync(async (req: Request, res: Response) => {
 });
 const bookAppointmentCallBack = catchAsync(
   async (req: Request, res: Response) => {
-    const result = bookAppointmentService.bookAppointmentCallback();
+    const result = await bookAppointmentService.bookAppointmentCallback(req.query);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -27,5 +27,5 @@ const bookAppointmentCallBack = catchAsync(
 
 export const AppointmentController = {
   bookAppointment,
-  bookAppointmentCallBack
+  bookAppointmentCallBack,
 };
