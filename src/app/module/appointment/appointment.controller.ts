@@ -13,7 +13,19 @@ const bookAppointment = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const bookAppointmentCallBack = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = bookAppointmentService.bookAppointmentCallback();
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "User profile fetched successfully",
+      data: result,
+    });
+  },
+);
 
 export const AppointmentController = {
   bookAppointment,
+  bookAppointmentCallBack
 };
