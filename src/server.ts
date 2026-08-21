@@ -12,6 +12,7 @@ import {
 
 const PORT = Number(config.port);
 
+
 const main = async () => {
   try {
     await prisma.$connect();
