@@ -17,7 +17,6 @@ enum Gender {
   OTHER
 }
 
-
 enum AuthProvider {
   GOOGLE
   CREDENTIAL
