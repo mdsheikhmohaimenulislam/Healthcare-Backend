@@ -1,24 +1,19 @@
 import z from "zod";
 
-const PatientRegisterZodSchema = z.object({
+const PatientRegistrationZodSchema = z.object({
   name: z
-    .string("Name must be a string")
-    .min(3, "Name must be at least 3 characters")
-    .max(50, "Name must be at most 50 characters"),
-
-  email: z.string().email("Invalid email address"),
-
+    .string("Not A String!!!!!")
+    .min(3, "Name must atleast 3 characters long!!!")
+    .max(10),
+  email: z.email("Not email!!"),
   password: z
     .string()
     .min(8, "Password Must Minimum 8 Characters Long.")
-    .regex(/[A-Z]/, "Password must contain at least 1 Uppercase Letter")
-    .regex(/[a-z]/, "Password must contain at least 1 Lowercase Letter")
-    .regex(/[0-9]/, "Password must contain at least 1 Number")
-    .regex(
-      /[^A-Za-z0-9]/,
-      "Password must contain at least 1 Special Character",
-    ),
+    .regex(/[a-z]/, "Password must contain atleast 1 Lowercase Letter")
+    .regex(/[A-Z]/, "Password must contain atleast 1 Uppercase Letter")
 
+    .regex(/[0-9]/, "Password must contain atleast 1 Number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain atleast 1 Special Character"),
   patient: z
     .object({
       contactNumber: z.string().optional(),
@@ -26,19 +21,16 @@ const PatientRegisterZodSchema = z.object({
     .optional(),
 });
 
-const loginZodSchema = z.object({
-  email: z.string().email("Invalid email address"),
-
+const LoginZodSchema = z.object({
+  email: z.email(),
   password: z
     .string()
     .min(8, "Password Must Minimum 8 Characters Long.")
-    .regex(/[A-Z]/, "Password must contain at least 1 Uppercase Letter")
-    .regex(/[a-z]/, "Password must contain at least 1 Lowercase Letter")
-    .regex(/[0-9]/, "Password must contain at least 1 Number")
-    .regex(
-      /[^A-Za-z0-9]/,
-      "Password must contain at least 1 Special Character",
-    ),
+    .regex(/[a-z]/, "Password must contain atleast 1 Lowercase Letter")
+    .regex(/[A-Z]/, "Password must contain atleast 1 Uppercase Letter")
+
+    .regex(/[0-9]/, "Password must contain atleast 1 Number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain atleast 1 Special Character"),
 });
 
 const ForgotPasswordZodSchema = z.object({
@@ -58,9 +50,15 @@ const ResetPasswordZodSchema = z.object({
   otp: z.string().length(6),
 });
 
+const PatientEmailVerifyZodSchema = z.object({
+  email: z.email("Not email!!"),
+  otp: z.string().length(6),
+});
+
 export const UserValidation = {
-  PatientRegisterZodSchema,
-  loginZodSchema,
+  PatientRegistrationZodSchema,
+  LoginZodSchema,
   ForgotPasswordZodSchema,
   ResetPasswordZodSchema,
+  PatientEmailVerifyZodSchema,
 };

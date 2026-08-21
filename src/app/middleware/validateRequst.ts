@@ -1,26 +1,29 @@
-import z from "zod";
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync";
+import z from "zod";
 
-export const validationRequest = (zodSchema: z.ZodObject) => {
-  return catchAsync((req: Request, res: Response, next: NextFunction) => {
-    const payload = req.body ?? {};
 
-    const result = zodSchema.safeParse(payload);
+export const validateRequest = (zodSchema: z.ZodObject) => {
+    return catchAsync(
+        (req: Request, res: Response, next: NextFunction) => {
 
-    console.log("VALIDATION RESULT:", result);
 
-    if (!result.success) {
-      console.log(result.error);
-      console.log(result.error.issues);
+            // const payload = req.body ? req.body : {}
+            const payload = req.body ?? {}
 
-      throw new Error(result.error.issues[0].message);
-    }
+            const result = zodSchema.safeParse(payload);
 
-    req.body = result.data;
+            if (!result.success) {
+                console.log(result.error);
+                console.log(result.error.issues);
 
-    console.log("VALIDATION PASSED:", req.body);
+                throw new Error(result.error.issues[0].message)
+            }
 
-    next();
-  });
-};
+            req.body = result.data
+
+            next()
+
+        }
+    )
+}
