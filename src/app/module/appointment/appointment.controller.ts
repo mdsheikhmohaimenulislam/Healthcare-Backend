@@ -15,13 +15,16 @@ const bookAppointment = catchAsync(async (req: Request, res: Response) => {
 });
 const bookAppointmentCallBack = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await bookAppointmentService.bookAppointmentCallback(req.query);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "User profile fetched successfully",
-      data: result,
-    });
+    const {executedPaymentResult,redirectUrl} = await bookAppointmentService.bookAppointmentCallback(req.query);
+   
+    res.redirect(redirectUrl)
+
+    // sendResponse(res, {
+    //   statusCode: httpStatus.OK,
+    //   success: true,
+    //   message: "User profile fetched successfully",
+    //   data: result,
+    // });
   },
 );
 
