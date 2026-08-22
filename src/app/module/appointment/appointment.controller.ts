@@ -16,6 +16,13 @@ const bookAppointment = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+
+// const apyAppointment = catchAsync()
+
+
+
+
 const bookAppointmentCallBack = catchAsync(
   async (req: Request, res: Response) => {
     const { executedPaymentResult, redirectUrl } =
