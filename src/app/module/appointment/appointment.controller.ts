@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import { bookAppointmentService } from "./appointment.service";
 import { sendResponse } from "../../utils/sendResponse";
@@ -30,6 +30,18 @@ const payAppointment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const cancelAppointment = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await bookAppointmentService.cancelAppointment(payload);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Appointment Cancel And Refunded Successfully.",
+    data: result,
+  });
+});
+
 const bookAppointmentCallBack = catchAsync(
   async (req: Request, res: Response) => {
     const { executedPaymentResult, redirectUrl } =
@@ -50,4 +62,5 @@ export const AppointmentController = {
   bookAppointment,
   bookAppointmentCallBack,
   payAppointment,
+  cancelAppointment,
 };
