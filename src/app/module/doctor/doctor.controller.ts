@@ -1,29 +1,39 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
+import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import httpStatus from "http-status";
-import { Result } from "../../../generated/prisma/internal/prismaNamespace";
 import { DoctorServices } from "./doctor.service";
+import { ApplyAsDoctorValidationZodSchema } from "./doctor.validation";
 
 const applyAsDoctor = catchAsync(async (req: Request, res: Response) => {
-  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  const resume = files?.["resume"] ? files["resume"][0] : null;
-  const additionalFiles = files?.["additionalFiles"] || [];
+	const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+	console.log({ files });
+	const resume = files?.["resume"] ? files["resume"][0] : null;
+	const additionalFiles = files?.["additionalFiles"] || [];
 
-  const data = JSON.parse(req.body.data);
+	const zodValidationResult = ApplyAsDoctorValidationZodSchema.safeParse(
+		JSON.parse(req.body.data),
+	);
 
-  console.log({ resume, additionalFiles, data });
+	if (!zodValidationResult.success) {
+		throw new Error(zodValidationResult.error.issues[0].message);
+	}
 
-  const result = await DoctorServices.applyAsDoctor();
+	const payload = zodValidationResult.data;
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Apply As Doctor Successfully.",
-    data: result,
-  });
+	const result = await DoctorServices.applyAsDoctor(
+		payload,
+		resume,
+		additionalFiles,
+	);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Applied As Doctor Successfuly",
+		data: result,
+	});
 });
 
 export const DoctorController = {
-  applyAsDoctor,
+	applyAsDoctor,
 };
