@@ -20,7 +20,7 @@ export const ApplyAsDoctorValidationZodSchema = z.object({
 
 		qualifications: z.string().trim().min(2, "Qualifications are required"),
 
-		// Handles converting incoming FormData strings like "12" into an integer number...
+		// Handles converting incoming FormData strings like "12" into an integer number.....
 		experienceYears: z
 			.number()
 			.int("Experience years must be an integer")
