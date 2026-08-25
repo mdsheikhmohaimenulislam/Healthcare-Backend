@@ -37,3 +37,5 @@ const applyAsDoctor = catchAsync(async (req: Request, res: Response) => {
 export const DoctorController = {
 	applyAsDoctor,
 };
+
+//......................

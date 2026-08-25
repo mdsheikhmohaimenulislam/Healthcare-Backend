@@ -25,7 +25,7 @@ export const ApplyAsDoctorValidationZodSchema = z.object({
 			.number()
 			.int("Experience years must be an integer")
 			.min(0, "Experience years cannot be negative")
-			.optional(),
+			,
 
 		bio: z
 			.string()
@@ -33,7 +33,7 @@ export const ApplyAsDoctorValidationZodSchema = z.object({
 			.max(1000, "Bio cannot exceed 1000 characters")
 			.optional(),
 
-		// Handles converting incoming FormData strings like "150.00" into a float number....
+		// Handles converting incoming FormData strings like "150.00" into a float number.dd...
 		consultationFee: z
 			.number()
 			.min(0, "Consultation fee cannot be negative")
