@@ -7,158 +7,158 @@ import path from "path";
 import { DoctorVerificationStatus, Role } from "../../../generated/prisma/enums";
 import { DoctorWhereInput } from "../../../generated/prisma/models";
 import config from "../../config";
-// import { IQuery } from "../../interfaces";
+import { IQuery } from "../../interfaces";
 import { cloudinary } from "../../lib/cloudinary";
 import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { RequestUser } from "../../middleware/checkAuth";
-// import { AppError } from "../../utils/AppError";
+import { AppError } from "../../utils/AppError";
 import { IApplyAsDoctorPayload, IApproveDoctorPayload, IVerifyDoctorEmailPayload } from "./doctor.interface";
 
-// const applyAsDoctor = async (
-// 	payload: IApplyAsDoctorPayload,
-// 	resume: Express.Multer.File | null,
-// 	additionalFiles: Express.Multer.File[],
-// ) => {
-// 	const isUserExists = await prisma.user.findUnique({
-// 		where: {
-// 			email: payload.user.email,
-// 		},
-// 	});
+const applyAsDoctor = async (
+	payload: IApplyAsDoctorPayload,
+	resume: Express.Multer.File | null,
+	additionalFiles: Express.Multer.File[],
+) => {
+	const isUserExists = await prisma.user.findUnique({
+		where: {
+			email: payload.user.email,
+		},
+	});
 
-// 	if (isUserExists) {
-// 		throw new AppError(httpStatus.CONFLICT, "User Already Exists With This Email");
-// 	}
+	if (isUserExists) {
+		throw new AppError(httpStatus.CONFLICT, "User Already Exists With This Email");
+	}
 
-// 	const resumeUploadResult = await new Promise<UploadApiResponse>(
-// 		(resolve, reject) => {
-// 			cloudinary.uploader
-// 				.upload_stream(
-// 					{
-// 						resource_type: "auto",
-// 					},
+	const resumeUploadResult = await new Promise<UploadApiResponse>(
+		(resolve, reject) => {
+			cloudinary.uploader
+				.upload_stream(
+					{
+						resource_type: "auto",
+					},
 
-// 					async (error, result) => {
-// 						if (error) {
-// 							return reject(error);
-// 						}
+					async (error, result) => {
+						if (error) {
+							return reject(error);
+						}
 
-// 						if (!result) {
-// 							return reject(
-// 								new AppError(
-// 									httpStatus.INTERNAL_SERVER_ERROR,
-// 									"No result returned from Cloudinary",
-// 								),
-// 							);
-// 						}
+						if (!result) {
+							return reject(
+								new AppError(
+									httpStatus.INTERNAL_SERVER_ERROR,
+									"No result returned from Cloudinary",
+								),
+							);
+						}
 
-// 						resolve(result);
-// 					},
-// 				)
-// 				.end(resume?.buffer);
-// 		},
-// 	);
+						resolve(result);
+					},
+				)
+				.end(resume?.buffer);
+		},
+	);
 
-// 	console.log({ resumeUploadResult });
+	console.log({ resumeUploadResult });
 
-// 	const additionalFilesUploadResults = await Promise.all(
-// 		additionalFiles.map((file) => {
-// 			return new Promise<UploadApiResponse>((resolve, reject) => {
-// 				cloudinary.uploader
-// 					.upload_stream(
-// 						{
-// 							resource_type: "auto",
-// 						},
+	const additionalFilesUploadResults = await Promise.all(
+		additionalFiles.map((file) => {
+			return new Promise<UploadApiResponse>((resolve, reject) => {
+				cloudinary.uploader
+					.upload_stream(
+						{
+							resource_type: "auto",
+						},
 
-// 						async (error, result) => {
-// 							if (error) {
-// 								return reject(error);
-// 							}
+						async (error, result) => {
+							if (error) {
+								return reject(error);
+							}
 
-// 							if (!result) {
-// 								return reject(new Error("No result returned from Cloudinary"));
-// 							}
+							if (!result) {
+								return reject(new Error("No result returned from Cloudinary"));
+							}
 
-// 							resolve(result);
-// 						},
-// 					)
-// 					.end(file.buffer);
-// 			});
-// 		}),
-// 	);
+							resolve(result);
+						},
+					)
+					.end(file.buffer);
+			});
+		}),
+	);
 
-// 	console.log({ additionalFilesUploadResults });
+	console.log({ additionalFilesUploadResults });
 
-// 	const randomDoctorPassword = Math.random().toString(36).slice(-8);
+	const randomDoctorPassword = Math.random().toString(36).slice(-8);
 
-// 	const hashedPassword = await bcrypt.hash(
-// 		randomDoctorPassword,
-// 		Number(config.bcrypt_salt_rounds),
-// 	);
+	const hashedPassword = await bcrypt.hash(
+		randomDoctorPassword,
+		Number(config.bcrypt_salt_rounds),
+	);
 
-// 	const doctorApplication = await prisma.user.create({
-// 		data: {
-// 			...payload.user,
-// 			password: hashedPassword,
-// 			role: Role.DOCTOR,
-// 			needPasswordChange: true,
-// 			doctor: {
-// 				create: {
-// 					name: payload.user.name,
-// 					email: payload.user.email,
-// 					...payload.doctor,
-// 					resume: resumeUploadResult.secure_url,
-// 					resumePublicId: resumeUploadResult.public_id,
-// 					additionalFiles: additionalFilesUploadResults.map((file) => ({
-// 						url: file.secure_url,
-// 						publicId: file.public_id,
-// 					})),
-// 				},
-// 			},
-// 		},
+	const doctorApplication = await prisma.user.create({
+		data: {
+			...payload.user,
+			password: hashedPassword,
+			role: Role.DOCTOR,
+			needPasswordChange: true,
+			doctor: {
+				create: {
+					name: payload.user.name,
+					email: payload.user.email,
+					...payload.doctor,
+					resume: resumeUploadResult.secure_url,
+					resumePublicId: resumeUploadResult.public_id,
+					additionalFiles: additionalFilesUploadResults.map((file) => ({
+						url: file.secure_url,
+						publicId: file.public_id,
+					})),
+				},
+			},
+		},
 
-// 		include: {
-// 			doctor: true,
-// 		},
-// 	});
+		include: {
+			doctor: true,
+		},
+	});
 
 
-// 	const expirationSeconds = 60 * 60 
+	const expirationSeconds = 60 * 60 
 
-// 	const otpKey = `doctor-application-otp:${payload.user.email}`
-// 	const otpValue = crypto.randomInt(100000, 1000000).toString();
+	const otpKey = `doctor-application-otp:${payload.user.email}`
+	const otpValue = crypto.randomInt(100000, 1000000).toString();
 
-// 	await redisClient.set(otpKey, otpValue, {
-// 		expiration: {
-// 			type: "EX",
-// 			value: expirationSeconds,
-// 		},
-// 	});
+	await redisClient.set(otpKey, otpValue, {
+		expiration: {
+			type: "EX",
+			value: expirationSeconds,
+		},
+	});
 
-// 	const tempatePath = path.join(
-// 		process.cwd(),
-// 		"src/app/templates/registration-user-otp.ejs",
-// 	);
+	const tempatePath = path.join(
+		process.cwd(),
+		"src/app/templates/registration-user-otp.ejs",
+	);
 
-// 	const templateData = {
-// 		name: payload.user.name,
-// 		email : payload.user.email,
-// 		otp: otpValue,
-// 		expirationMinutes: expirationSeconds / 60,
-// 	};
+	const templateData = {
+		name: payload.user.name,
+		email : payload.user.email,
+		otp: otpValue,
+		expirationMinutes: expirationSeconds / 60,
+	};
 
-// 	const html = await ejs.renderFile(tempatePath, templateData);
+	const html = await ejs.renderFile(tempatePath, templateData);
 
-// 	await transporter.sendMail({
-// 		from: config.email_sender,
-// 		to: payload.user.email,
-// 		subject: "Doctor Application - Email Verification",
-// 		html,
-// 	});
+	await transporter.sendMail({
+		from: config.email_sender,
+		to: payload.user.email,
+		subject: "Doctor Application - Email Verification",
+		html,
+	});
 
-// 	return doctorApplication;
-// };
+	return doctorApplication;
+};
 
 const verifyDoctorEmail = async (payload : IVerifyDoctorEmailPayload) => {
 	const otp = payload.otp;
@@ -293,109 +293,109 @@ const approveDoctor = async (payload : IApproveDoctorPayload, reviewer : Request
 
 }
 
-// const getAllDoctors = async (query: IQuery) => {
+const getAllDoctors = async (query: IQuery) => {
 
-// 	const limit = query.limit ? Number(query.limit) : 10;
-// 	const page = query.page ? Number(query.page) : 1;
-// 	const skip = (page - 1) * limit;
-// 	const sortBy = query.sortBy ? query.sortBy : "createdAt";
-// 	const sortOrder = query.sortOrder ? query.sortOrder : "desc"
+	const limit = query.limit ? Number(query.limit) : 10;
+	const page = query.page ? Number(query.page) : 1;
+	const skip = (page - 1) * limit;
+	const sortBy = query.sortBy ? query.sortBy : "createdAt";
+	const sortOrder = query.sortOrder ? query.sortOrder : "desc"
 
-// 	const andConditions: DoctorWhereInput[] = []
+	const andConditions: DoctorWhereInput[] = []
 
-// 	//Searching
-// 	if (query.searchTerm) {
-// 		andConditions.push({
-// 			OR: [
-// 				{ name: { contains: query.searchTerm, mode: "insensitive" } },
-// 				{ email: { contains: query.searchTerm, mode: "insensitive" } },
-// 				{
-// 					specialization: {
-// 						contains: query.searchTerm,
-// 						mode: "insensitive",
-// 					},
-// 				},
-// 				{
-// 					licenseNumber: {
-// 						contains: query.searchTerm,
-// 						mode: "insensitive",
-// 					},
-// 				},
-// 			],
-// 		});
-// 	}
+	//Searching
+	if (query.searchTerm) {
+		andConditions.push({
+			OR: [
+				{ name: { contains: query.searchTerm, mode: "insensitive" } },
+				{ email: { contains: query.searchTerm, mode: "insensitive" } },
+				{
+					specialization: {
+						contains: query.searchTerm,
+						mode: "insensitive",
+					},
+				},
+				{
+					licenseNumber: {
+						contains: query.searchTerm,
+						mode: "insensitive",
+					},
+				},
+			],
+		});
+	}
 
-// 	//filtering
-// 	if (query.specialization) {
-// 		andConditions.push({
-// 			specialization: { equals: query.specialization, mode: "insensitive" },
-// 		});
-// 	}
+	//filtering
+	if (query.specialization) {
+		andConditions.push({
+			specialization: { equals: query.specialization, mode: "insensitive" },
+		});
+	}
 
-// 	if (query.email) {
-// 		andConditions.push({
-// 			email: { contains: query.email, mode: "insensitive" },
-// 		});
-// 	}
+	if (query.email) {
+		andConditions.push({
+			email: { contains: query.email, mode: "insensitive" },
+		});
+	}
 
-// 	if (query.licenseNumber) {
-// 		andConditions.push({
-// 			licenseNumber: { equals: query.licenseNumber, mode: "insensitive" },
-// 		});
-// 	}
+	if (query.licenseNumber) {
+		andConditions.push({
+			licenseNumber: { equals: query.licenseNumber, mode: "insensitive" },
+		});
+	}
 
-// 	if (query.verificationStatus) {
-// 		andConditions.push({
-// 			verificationStatus: query.verificationStatus as DoctorVerificationStatus,
-// 		});
-// 	}
+	if (query.verificationStatus) {
+		andConditions.push({
+			verificationStatus: query.verificationStatus as DoctorVerificationStatus,
+		});
+	}
 
-// 	andConditions.push({ isDeleted: false });
+	andConditions.push({ isDeleted: false });
 
-// 	const allDoctors = await prisma.doctor.findMany({
-// 		where : {
-// 			AND : andConditions.length > 0 ? andConditions : undefined
-// 		},
+	const allDoctors = await prisma.doctor.findMany({
+		where : {
+			AND : andConditions.length > 0 ? andConditions : undefined
+		},
 
-// 		take: limit,
-// 		skip: skip,
+		take: limit,
+		skip: skip,
 
 
-// 		orderBy: {
-// 			// sortBy : sortOrder
-// 			[sortBy]: sortOrder
-// 		},
+		orderBy: {
+			// sortBy : sortOrder
+			[sortBy]: sortOrder
+		},
 
-// 		include:{
-// 			user: {
-// 				omit:{
-// 					password: true
-// 				}
-// 			},
+		include:{
+			user: {
+				omit:{
+					password: true
+				}
+			},
 
-// 			// schedules: true,
-// 			// appointments: true
-// 			// prescriptions: true
-// 		}
+			// schedules: true,
+			// appointments: true
+			// prescriptions: true
+		}
 
-// 	});
+	});
 
-// 	const totalDoctorCount = await prisma.doctor.count({
-// 		where: {
-// 			AND: andConditions
-// 		}
-// 	})
+	const totalDoctorCount = await prisma.doctor.count({
+		where: {
+			AND: andConditions
+		}
+	})
 
-// 	return {
-// 		data: allDoctors,
-// 		meta: {
-// 			page: page,
-// 			limit: limit,
-// 			total: totalDoctorCount,
-// 			totalPages: Math.ceil(totalDoctorCount / limit)
-// 		}
-// 	}
-// }
+	return {
+		data: allDoctors,
+		meta: {
+			page: page,
+			limit: limit,
+			total: totalDoctorCount,
+			totalPages: Math.ceil(totalDoctorCount / limit)
+		}
+	}
+}
 
 
 
@@ -403,5 +403,5 @@ export const DoctorServices = {
 	applyAsDoctor,
 	verifyDoctorEmail,
 	approveDoctor,
-	// getAllDoctors
+	getAllDoctors
 };
