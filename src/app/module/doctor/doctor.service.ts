@@ -13,8 +13,9 @@ import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { RequestUser } from "../../middleware/checkAuth";
-import { AppError } from "../../utils/AppError";
+
 import { IApplyAsDoctorPayload, IApproveDoctorPayload, IVerifyDoctorEmailPayload } from "./doctor.interface";
+import { AppError } from "../../utils/AppError";
 
 const applyAsDoctor = async (
 	payload: IApplyAsDoctorPayload,
@@ -77,7 +78,7 @@ const applyAsDoctor = async (
 							}
 
 							if (!result) {
-								return reject(new Error("No result returned from Cloudinary"));
+								return reject(new AppError(httpStatus.INTERNAL_SERVER_ERROR, "No result returned from Cloudinary"));
 							}
 
 							resolve(result);
