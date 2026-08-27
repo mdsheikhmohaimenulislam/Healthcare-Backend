@@ -13,7 +13,7 @@ import { AppError } from "../../utils/AppError";
 
 const bookAppointment = async (payload: any, user: RequestUser) => {
   const transactionResult = await prisma.$transaction(async (tx) => {
-    // business logic...................
+    // business logic......................
 
     const appointment = await tx.appointment.create({
       data: {
