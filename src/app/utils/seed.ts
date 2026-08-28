@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import { Role } from "../../generated/prisma/enums";
 import { prisma } from "../lib/prisma";
 import config from "../config";
+import { AppError } from "./AppError";
+import httpStatus from "http-status";
 
 //create tester Super admin
 
@@ -76,7 +78,7 @@ export const seedTesterAdmin = async () => {
         const password = config.tester_admin_password
 
         if (!name || !email || !password) {
-            throw new Error("Tester Admin Name , Email, Password Missing In Env File!!!")
+            throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Tester Admin Name , Email, Password Missing In Env File!!!")
         }
 
         const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds))
@@ -131,7 +133,7 @@ export const seedTesterDoctor = async () => {
         const password = config.tester_admin_password
 
         if (!name || !email || !password) {
-            throw new Error("Tester Doctor Name , Email, Password Missing In Env File!!!")
+            throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Tester Doctor Name , Email, Password Missing In Env File!!!")
         }
 
         const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds))
