@@ -469,6 +469,8 @@ const bookAppointmentCallback = async (query: Record<string, any>) => {
 	return transactionResult;
 };
 
+
+// Cancel Appointment.....
 const cancelAppointment = async (payload: ICancelAppointmentPayload, user : RequestUser) => {
 	const transactionResult = await prisma.$transaction(async (tx) => {
 		const appointmentId = payload.appointmentId;
