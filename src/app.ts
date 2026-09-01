@@ -46,7 +46,7 @@ app.use("/api/v1/appointment", AppointementRoutes);
 app.use("/api/v1/doctor", DoctorRoutes);
 app.use("/api/v1/schedule", ScheduleRoutes);
 app.use("/api/v1/payment",PaymentRoutes);
-app.use("/api/v1/prescription", PrescriptionRoutes);
+// app.use("/api/v1/prescription", PrescriptionRoutes);
 app.use("/api/v1/analytics", AnalyticsRoutes);
 
 app.get("/test", async (req: Request, res: Response, next: NextFunction) => {
