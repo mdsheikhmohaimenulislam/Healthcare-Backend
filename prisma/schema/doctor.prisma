@@ -1,39 +1,42 @@
-model Doctor{
-    id String   @id @default(uuid())
-    name String 
-    email String @unique
-    address String?
+model Doctor {
+  id String @id @default(uuid())
 
-    specialization String
-    licenseNumber String
-    qualifications String @unique
-    experienceYears Int
+  name    String
+  email   String  @unique
+  address String?
 
-    bio String?
-    consultationFree Decimal? @db.Decimal(10,2)
+  specialization  String
+  licenseNumber   String @unique
+  qualifications String
+  experienceYears Int
 
-    contactNumber String?
+  bio             String?
+  consultationFee Decimal? @db.Decimal(10, 2)
 
-    verificationStatus DoctorVerificationStatus @default(PENDING)
-    rejectionReason String?
-    revieweBy String?
-    revieweAt DateTime?
+  contactNumber String?
 
-    resume String?
-    resumePublicId String?
-    additionalFiles Json?
+  verificationStatus DoctorVerificationStatus @default(PENDING)
+  rejectionReason    String?
+  reviewedBy         String?
+  reviewedAt         DateTime?
 
-    isDeleted  Boolean @default(false)
-    deletedAt DateTime?
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    userId String @unique
-    user User @relation(fields: [userId],references: [id],onDelete: Cascade ,onUpdate: Cascade)
+  resume          String?
+  resumePublicId   String?
+  additionalFiles Json? // Array of file URLs or file metadata // Stores: [{ url: "...", publicId: "..." }]
 
 
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
-    @@index([email], name:"idx_doctor_email")
-    @@map("doctors")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  schedules Schedule[]
+  appointments Apppointment[]
+
+  @@index([email], name: "idx_doctor_email")
+  @@map("doctors")
 }

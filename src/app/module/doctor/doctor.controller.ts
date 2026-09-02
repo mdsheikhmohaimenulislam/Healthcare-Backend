@@ -4,7 +4,9 @@ import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { DoctorServices } from "./doctor.service";
-import { ApplyAsDoctorValidationZodSchema } from "./doctor.validation";
+import {
+	ApplyAsDoctorValidationZodSchema,
+} from "./doctor.validation";
 
 const applyAsDoctor = catchAsync(async (req: Request, res: Response) => {
 	const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -71,12 +73,79 @@ const getAllDoctors = catchAsync(async (req: Request, res: Response) => {
 		meta : meta,
 	});
 });
+const updateDoctorProfile = catchAsync(
+	async (req: Request, res: Response) => {
+		const payload = req.body;
+		const user = req.user!;
+
+		const result = await DoctorServices.updateDoctorProfile(payload, user);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Doctor Profile Updated Successfully",
+			data: result,
+		});
+	},
+);
 
 
+
+const getAvailableDoctorByTodaysSchedule = catchAsync(
+	async (req: Request, res: Response) => {
+	
+
+		const { data, meta } = await DoctorServices.getAvailableDoctorByTodaysSchedule(
+			req.query
+		);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Today's Available Doctors Retrieved Successfully",
+			data,
+			meta,
+		});
+	},
+);
+
+const getAllDoctorsListPublic = catchAsync(async (req: Request, res: Response) => {
+
+
+	const { data, meta } = await DoctorServices.getAllDoctorsListPublic(
+		req.query
+	);
+	sendResponse(res, {
+		statusCode: httpStatus.OK,
+		success: true,
+		message: "Doctors Retrieved Successfully",
+		data,
+		meta,
+	});
+});
+
+const getSingleDoctorPublicProfile = catchAsync(
+	async (req: Request, res: Response) => {
+
+		const doctorId = req.params.doctorId as string
+		
+		const result = await DoctorServices.getSingleDoctorPublicProfile(
+			doctorId
+		);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Doctor Profile Retrieved Successfully",
+			data: result,
+		});
+	},
+);
 
 export const DoctorController = {
 	applyAsDoctor,
 	verifyDoctorEmail,
 	approveDoctor,
-	getAllDoctors
+	getAllDoctors,
+	updateDoctorProfile,
+	getAvailableDoctorByTodaysSchedule,
+	getAllDoctorsListPublic,
+	getSingleDoctorPublicProfile,
 };
