@@ -66,7 +66,7 @@ app.get("/test", async (req: Request, res: Response, next: NextFunction) => {
 	}
 });
 
-// Basic route
+// Basic route...
 app.get("/", async (req: Request, res: Response) => {
 	res.status(httpStatus.OK).json({
 		success: true,
